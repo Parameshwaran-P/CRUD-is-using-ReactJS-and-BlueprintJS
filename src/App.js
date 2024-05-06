@@ -19,9 +19,35 @@ function App() {
 
 
   const onChangehandle = (id, key, value) => {
-   setUser((user)=>{user.map()})
+   setUser(()=>{
+   return user.map((users)=>{
+      return users.id === id ? {...users, [key]:value} : users;
+    })
+   })
   }
-  const handleUpdate=()=>{
+  const handleUpdate=(id)=>{
+    const users = user.find((users)=>
+       users.id === id );
+    fetch(`https://jsonplaceholder.typicode.com/users/10`,
+    { 
+      method:'PUT',
+      body: JSON.stringify(users),
+      headers: {
+        'Content-type': 'application/json ; Charset=UTF-8 '
+      }
+    }
+  )
+  .then((response)=> response.json())
+  .then(data=>{
+  AddToaster.show({
+    message: "Update User Successfully!",
+    intent:'success',
+    timeout: 3000
+  })
+  
+  })
+
+
   }
   
     const addUser=()=>{
@@ -57,12 +83,31 @@ function App() {
     }
   }
 
-  const handleDelete=()=>{
-
+  const handleDelete=(id)=>{
+  fetch(`https://jsonplaceholder.typicode.com/users/${id}`,
+   {
+     method: 'DELETE'
+   } 
+  )
+  .then((response)=>{response.json()})
+  .then((data)=>{
+    setUser((user)=>{
+      return user.filter(users=>
+       users.id !== id
+      )
+    })
+    AddToaster.show(
+      {
+        message: "Delete user successfully!",
+        intent: "success",
+        timeout: 3000
+      }
+    )
+  })
   }
   return (
     <div className="App">
-      <table>
+      <table border={1}>
         <thead>
           <th>ID</th>
           <th>Name</th>
@@ -75,18 +120,18 @@ function App() {
           <tr key={users.id}>
           <td>{users.id}</td>
           <td>{users.name}</td>
-          <td><EditableText onChange={value=>onChangehandle(value=users.id, 'email', value)} value= {users.email}></EditableText></td>
-          <td><EditableText onChange={value=>onChangehandle(value=users.id, 'website', value)} value={users.email} /></td>
-          <td><Button intent='primary' onClick={handleUpdate}>Upadate</Button>
-              &nbsp;<Button intent='danger' onClick={handleDelete}>Delete</Button></td>
+          <td><EditableText onChange={value=>onChangehandle(users.id, 'email', value)} value= {users.email}></EditableText></td>
+          <td><EditableText onChange={value=>onChangehandle(users.id, 'website', value)} value={users.website} /></td>
+          <td><Button intent='primary' onClick={() => handleUpdate(users.id)}>Upadate</Button>
+              &nbsp;<Button intent='danger' onClick={() => handleDelete(users.id)}>Delete</Button></td>
            </tr>)}
         </tbody>
         <tfoot>
           <tr>
             <td></td>
-            <td><InputGroup value={newName} onChange={(e)=>setNewname(e.target.value)}/></td>
-            <td><InputGroup value={newEmail} onChange={(e)=>setNewemail(e.target.value)} /></td>
-            <td><InputGroup value={newWebsite} onChange={(e)=>setNewwebsite(e.target.value)}/></td>
+            <td><InputGroup placeholder='Enter a name?' value={newName} onChange={(e)=>setNewname(e.target.value)} p/></td>
+            <td><InputGroup placeholder='Enter a email?' value={newEmail} onChange={(e)=>setNewemail(e.target.value)} /></td>
+            <td><InputGroup placeholder='Enter a website?' value={newWebsite} onChange={(e)=>setNewwebsite(e.target.value)}/></td>
             <td><Button intent='success' onClick={addUser}>Adduser</Button></td>
           </tr>
         </tfoot>
